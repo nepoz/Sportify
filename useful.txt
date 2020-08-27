@@ -1,0 +1,19 @@
+EVENTS
+
+discord.on_ready()
+discord.on_error(event, *args, **kwargs) -- for handling errors in any particular event
+discord.on_typing(channel, user, when) -- user is Member for TextChannel, otherwiuse user
+discord.on_message(message)
+discord.on_reaction_add(reaction, user) -- can do something like Groovy and its queue
+    - same with discord.on_reaction_remove(reaction, user) -- Reaction.message to get message
+discord.on_member_join(member)
+discord.on_guild_join(guild) -- when Client joins a guild
+discord.on_guild_update(before, after) -- for checking bit rate changes etc?
+
+Important Models/Interfaces:
+abc.Messagable
+Converters
+utils
+Discord converters
+
+Invite Link: https://discord.gg/Uj9mJXP
