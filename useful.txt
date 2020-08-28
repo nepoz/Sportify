@@ -17,3 +17,8 @@ utils
 Discord converters
 
 Invite Link: https://discord.gg/Uj9mJXP
+
+csgo_match_id = 3 (pandascore api)
+datetime.date for date, datetime.timedelta to express time differences
+Use game slug to filter results from Panda API
+Can do server-side filtering of CS games accourding to tier
