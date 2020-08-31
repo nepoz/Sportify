@@ -22,3 +22,14 @@ csgo_match_id = 3 (pandascore api)
 datetime.date for date, datetime.timedelta to express time differences
 Use game slug to filter results from Panda API
 Can do server-side filtering of CS games accourding to tier
+
+
+DATABASE
+client.database.collection.insert_one() to make an entry
+client.database.collection.find_one() to find a single entry
+    find_one({"attribute" : value}) to search based on attributes
+insert_many() to make multiple entries at once 
+
+find() will return all matched instances of a query as a Cursor, so we can iterate
+over what it returns.
+create_index to use an identifier other than just Mongo provided _id
