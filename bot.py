@@ -55,9 +55,10 @@ async def on_member_join(member: discord.Member):
 @bot.command(name="csgo")
 async def csgo(ctx, timezone=None):
     await esports.get_csgo_schedule(ctx, timezone)
-@csgo.error
-async def csgo_error(ctx: Context, error):
-    await time_errors.invalid_tz(ctx, error)
+# @csgo.error
+# async def csgo_error(ctx: Context, error):
+#     print (error)
+#     await time_errors.invalid_tz(ctx, error)
 
 @bot.command(name="csgo3day")
 async def csgo3day(ctx, timezone=None):

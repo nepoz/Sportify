@@ -1,11 +1,14 @@
 import requests
 from datetime import datetime
+import pytz
 import json
+import asyncio
 
 from utils import time_management
 from utils import mongo
 
 from discord.ext.commands import Context
+from discord import Message
 from pprint import pprint
 
 with open('utils/SDB_IDS.json', 'r') as f:
@@ -33,30 +36,53 @@ async def extract_15(league, timezone, three_day):
     else:
         to_show = next15
 
+    ## Filter out games that have already taken place
+    upcoming_games = [
+        game for game in to_show if 
+        time_management.create_utcdatetime(game['dateEvent'], game['strTime'])
+        >= datetime.now().astimezone(pytz.utc)
+    ]
+
     display = [{
         'match' : game['strEvent'],
         'game_time' : time_management.to_tz(
             time_management.create_utcdatetime(game['dateEvent'], game['strTime']),
             timezone),
         'item_number' : i + 1
-    } for i, game in enumerate(to_show)]
+    } for i, game in enumerate(upcoming_games)]
     
     return display
 
 async def get_sport_schedule(ctx: Context, league, timezone, three_day=False):
+    bot = ctx.bot
     async with ctx.typing():
         if not timezone:
             timezone = mongo.get_guild_tz(ctx.guild)
         
         display = await extract_15(league, timezone, three_day)
-
+        
         output = f"Upcoming {league.upper()} Matches:\n" if not three_day else f"Upcoming {league.upper()} matches in next 3 days:"
         no_games = f"No {league.upper()} matches found for specified period."
 
         if not display:
             await ctx.send(no_games)
         else:
-            for i, item in enumerate(display):
+            for item in display:
                 output += (f"```{item['item_number']}. {item['match']}\n")
                 output += f"Time: {time_management.readify(item['game_time'])}\n```"
             await ctx.send(output)
+            await ctx.send("If you want to set a reminder for an event, send the event number in next 30 seconds.")
+
+            def range_check(m: Message):
+                return int(m.content) in range(len(display) + 1)
+
+            try: 
+                reminder_for = await bot.wait_for('message', check=range_check, timeout=30)
+                index = int(reminder_for.content) - 1
+                time = time_management.to_tz(display[index]['game_time'], 'utc')
+                match = display[index]['match']
+            except asyncio.TimeoutError:
+                await ctx.send('Did not register a selection')
+            else:
+                await ctx.send(f"$natural at {time} send {match} to {ctx.channel.mention}")
+               

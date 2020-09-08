@@ -50,7 +50,7 @@ async def get_csgo_schedule(ctx: Context, timezone, three_day=False):
         output = 'Next top tier CSGO Matches I found:\n' if not three_day else "CSGO matches in the next three days:\n"
         no_games = "No top tier CS games found for specified period."
 
-        for i, item in enumerate(display):
+        for item in display:
             output += (f"```{item['item_number']}. Tournament : {item['tournament']}\n")
             output += f"Game: {item['game_name']}\n"
             output += f"Time: {time_management.readify(item['game_time'])}\n```"

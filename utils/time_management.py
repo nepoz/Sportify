@@ -12,8 +12,8 @@ def create_window(delta=20):
 
 ## Converts given datetime to a specified timezone
 def to_tz(usr_datetime: datetime, user_tz='utc'):
-    usr_utc = usr_datetime.replace(tzinfo=timezone.utc)
-    return usr_utc.astimezone(pytz.timezone(user_tz))
+    usr_dt = usr_datetime.replace(tzinfo=timezone.utc) if not usr_datetime.tzinfo else usr_datetime
+    return usr_dt.astimezone(pytz.timezone(user_tz))
 
 ## Formats datetime to standard readable format
 def readify(usr_datetime: datetime):
