@@ -1,5 +1,6 @@
 import requests
 from datetime import datetime
+from datetime import timedelta
 import pytz
 import json
 import asyncio
@@ -77,12 +78,12 @@ async def get_sport_schedule(ctx: Context, league, timezone, three_day=False):
                 return int(m.content) in range(len(display) + 1)
 
             try: 
-                reminder_for = await bot.wait_for('message', check=range_check, timeout=30)
+                reminder_for = await bot.wait_for('message', check=range_check, timeout=60)
                 index = int(reminder_for.content) - 1
                 time = time_management.to_tz(display[index]['game_time'], 'utc')
                 match = display[index]['match']
             except asyncio.TimeoutError:
                 await ctx.send('Did not register a selection')
             else:
-                await ctx.send(f"$natural at {time} send {match} to {ctx.channel.mention}")
-               
+                await ctx.send(f"Okay! Reminder set for {match}!")
+                await time_management.remind_at(time, match, ctx.channel)
