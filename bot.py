@@ -63,9 +63,9 @@ async def csgo(ctx, timezone=None):
 @bot.command(name="csgo3day")
 async def csgo3day(ctx, timezone=None):
     await esports.get_csgo_schedule(ctx, timezone, three_day=True)
-@csgo3day.error
-async def csgo3day_error(ctx: Context, error):
-    await time_errors.invalid_tz(ctx, error)
+# @csgo3day.error
+# async def csgo3day_error(ctx: Context, error):
+#     await time_errors.invalid_tz(ctx, error)
 
 @bot.command(name="sport")
 async def sport(ctx, league, timezone=None):

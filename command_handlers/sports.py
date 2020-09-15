@@ -56,34 +56,35 @@ async def extract_15(league, timezone, three_day):
 
 async def get_sport_schedule(ctx: Context, league, timezone, three_day=False):
     bot = ctx.bot
-    async with ctx.typing():
-        if not timezone:
-            timezone = mongo.get_guild_tz(ctx.guild)
-        
-        display = await extract_15(league, timezone, three_day)
-        
-        output = f"Upcoming {league.upper()} Matches:\n" if not three_day else f"Upcoming {league.upper()} matches in next 3 days:"
-        no_games = f"No {league.upper()} matches found for specified period."
+    await ctx.trigger_typing()
+    
+    if not timezone:
+        timezone = mongo.get_guild_tz(ctx.guild)
+    
+    display = await extract_15(league, timezone, three_day)
+    
+    output = f"Upcoming {league.upper()} Matches:\n" if not three_day else f"Upcoming {league.upper()} matches in next 3 days:"
+    no_games = f"No {league.upper()} matches found for specified period."
 
-        if not display:
-            await ctx.send(no_games)
+    if not display:
+        await ctx.send(no_games)
+    else:
+        for item in display:
+            output += (f"```{item['item_number']}. {item['match']}\n")
+            output += f"Time: {time_management.readify(item['game_time'])}\n```"
+        await ctx.send(output)
+        await ctx.send("If you want to set a reminder for an event, send the event number in next 45 seconds.")
+
+        def range_check(m: Message):
+            return int(m.content) in range(len(display) + 1) and m.author == ctx.author
+
+        try: 
+            reminder_for = await bot.wait_for('message', check=range_check, timeout=45)
+            index = int(reminder_for.content) - 1
+            time = time_management.to_tz(display[index]['game_time'], 'utc')
+            match = display[index]['match']
+        except asyncio.TimeoutError:
+            await ctx.send('Did not register a selection')
         else:
-            for item in display:
-                output += (f"```{item['item_number']}. {item['match']}\n")
-                output += f"Time: {time_management.readify(item['game_time'])}\n```"
-            await ctx.send(output)
-            await ctx.send("If you want to set a reminder for an event, send the event number in next 30 seconds.")
-
-            def range_check(m: Message):
-                return int(m.content) in range(len(display) + 1)
-
-            try: 
-                reminder_for = await bot.wait_for('message', check=range_check, timeout=60)
-                index = int(reminder_for.content) - 1
-                time = time_management.to_tz(display[index]['game_time'], 'utc')
-                match = display[index]['match']
-            except asyncio.TimeoutError:
-                await ctx.send('Did not register a selection')
-            else:
-                await ctx.send(f"Okay! Reminder set for {match}!")
-                await time_management.remind_at(time, match, ctx.channel)
+            await ctx.send(f"Okay! Reminder set for {match}!")
+            await time_management.remind_at(time, match, ctx.channel)
