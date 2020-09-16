@@ -1,3 +1,5 @@
+from pytz.exceptions import UnknownTimeZoneError
+
 from discord.ext.commands import Context
 
 from utils import time_management
@@ -8,7 +10,7 @@ async def set_tz(ctx: Context, timezone):
         mongo.update_guild_timezone(ctx.guild, timezone.lower())
         await ctx.send(f"Timezone now set to `{timezone.lower()}`")
     else:
-        await ctx.send(f"Did not recognize timezone, check valid timezones here: https://gist.github.com/heyalexej/8bf688fd67d7199be4a1682b3eec7568")
+        raise UnknownTimeZoneError
 
 async def get_tz(ctx: Context):
     tz = mongo.get_guild_tz(ctx.guild)

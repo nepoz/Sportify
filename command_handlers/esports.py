@@ -21,7 +21,7 @@ PANDA_AUTH = {"Authorization" : f"Bearer {PANDA_TOKEN}"}
 # TODO: Add functionality to look a specified time ahead in the future
 async def get_csgo_schedule(ctx: Context, timezone, three_day=False):
     bot = ctx.bot
-    await ctx.trigger_typing()
+    await ctx.channel.trigger_typing()
     
     if not timezone:
         timezone = mongo.get_guild_tz(ctx.guild)

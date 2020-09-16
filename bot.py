@@ -2,12 +2,15 @@ import os
 from dotenv import load_dotenv
 import typing
 import requests
-from discord.ext.commands.errors import CommandInvokeError
-from discord.ext.commands.errors import MissingRequiredArgument
+import logging
 
 import discord
 from discord.ext import commands
 from discord.ext.commands import Context
+
+from discord.ext.commands.errors import CommandInvokeError
+from discord.ext.commands.errors import MissingRequiredArgument
+from pytz.exceptions import UnknownTimeZoneError
 
 from utils import guild_management
 from utils import time_management
@@ -18,6 +21,10 @@ from command_handlers import guild
 from command_handlers import sports
 
 from error_handlers import time_errors
+from error_handlers import argument_errors
+
+## Set up error logger
+logging.basicConfig()
 
 ## load Discord token from .env file
 load_dotenv()
@@ -55,17 +62,22 @@ async def on_member_join(member: discord.Member):
 @bot.command(name="csgo")
 async def csgo(ctx, timezone=None):
     await esports.get_csgo_schedule(ctx, timezone)
-# @csgo.error
-# async def csgo_error(ctx: Context, error):
-#     print (error)
-#     await time_errors.invalid_tz(ctx, error)
+@csgo.error
+async def csgo_error(ctx: Context, error):
+    if isinstance(error.__cause__, UnknownTimeZoneError):
+        await time_errors.invalid_tz(ctx, error)
+    else:
+       await argument_errors.default(ctx, error)
 
 @bot.command(name="csgo3day")
 async def csgo3day(ctx, timezone=None):
     await esports.get_csgo_schedule(ctx, timezone, three_day=True)
-# @csgo3day.error
-# async def csgo3day_error(ctx: Context, error):
-#     await time_errors.invalid_tz(ctx, error)
+@csgo3day.error
+async def csgo3day_error(ctx: Context, error):
+    if isinstance(error.__cause__, UnknownTimeZoneError):
+        await time_errors.invalid_tz(ctx, error)
+    else:
+        await argument_errors.default(ctx, error)
 
 @bot.command(name="sport")
 async def sport(ctx, league, timezone=None):
@@ -73,15 +85,30 @@ async def sport(ctx, league, timezone=None):
 @sport.error
 async def sports_error(ctx: Context, error):
     if isinstance(error, MissingRequiredArgument):
-        await ctx.send("Indicate what league you want the schedule for! Like: ^sport nba")
+        await argument_errors.sport(ctx, error)
+    elif isinstance(error.__cause__, UnknownTimeZoneError):
+        await time_errors.invalid_tz(ctx, error)
+    else:
+        await argument_errors.default(ctx, error)
 
 @bot.command(name="set_tz")
 async def set_tz(ctx: Context, timezone):
     await command_handlers.guild.set_tz(ctx, timezone)
+@set_tz.error
+async def set_tz_error(ctx:Context, error):
+    if isinstance(error, MissingRequiredArgument):
+        await argument_errors.set_tz(ctx, error)
+    elif isinstance(error.__cause__, UnknownTimeZoneError):
+        await time_errors.invalid_tz(ctx, error)
+    else:
+        await argument_errors.default(ctx, error)
 
 @bot.command(name="get_tz")
 async def get_tz(ctx: Context):
     await command_handlers.guild.get_tz(ctx)
+@get_tz.error
+async def get_tz_error(ctx:Context, error):
+    await argument_errors.default(ctx, error)
 
 ## Start bot
 bot.run(DISCORD_TOKEN)

@@ -56,7 +56,7 @@ async def extract_15(league, timezone, three_day):
 
 async def get_sport_schedule(ctx: Context, league, timezone, three_day=False):
     bot = ctx.bot
-    await ctx.trigger_typing()
+    await ctx.channel.trigger_typing()
     
     if not timezone:
         timezone = mongo.get_guild_tz(ctx.guild)
