@@ -19,6 +19,7 @@ import command_handlers
 from command_handlers import esports
 from command_handlers import guild
 from command_handlers import sports
+from command_handlers import help
 
 from error_handlers import time_errors
 from error_handlers import argument_errors
@@ -34,8 +35,9 @@ PANDA_TOKEN = os.getenv('PANDA_TOKEN')
 ## Auth headers for API Calls
 PANDA_AUTH = {"Authorization" : f"Bearer {PANDA_TOKEN}"}
 
-## Create bot client
+## Create bot client, remove default help command
 bot = commands.Bot(command_prefix="^")
+bot.remove_command('help')
 
 ## Test to see if bot can run
 @bot.event
@@ -109,6 +111,10 @@ async def get_tz(ctx: Context):
 @get_tz.error
 async def get_tz_error(ctx:Context, error):
     await argument_errors.default(ctx, error)
+
+@bot.command(name="help")
+async def get_help(ctx: Context, command='help'):
+    await help.help(ctx, command)
 
 ## Start bot
 bot.run(DISCORD_TOKEN)
