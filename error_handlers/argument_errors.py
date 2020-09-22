@@ -12,3 +12,7 @@ async def sport(ctx: Context, error):
 async def set_tz(ctx: Context, error):
     await ctx.send("Indicate what timezone you want! Like: ^set_tz US/Central")
     logging.error(error)
+
+async def not_command(ctx: Context, error):
+    await ctx.send("Did not recognize command, use ^help to see list of available commands.")
+    logging.error(error)

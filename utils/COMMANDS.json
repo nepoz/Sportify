@@ -1,9 +1,9 @@
 {
-    "help": "`Usage: ^help <command>: Displays help for specific command, or for all commands if command argument omitted.`",
-    "sport": "`Usage: ^sport <league> Displays next 15 scheduled matches for specified sport league.`",
-    "^sport <League3day>": "Displays up to 15 scheduled matches for specified sport league in the next 3 days.",
-    "^csgo": "Display up to 15 upcoming csgo matches (only A-Tier and S-tier tournaments considered).",
-    "^csgo3day":"Display up to 15 upcoming csgo matches taking place in the next 3 days (only A-Tier and S-tier tournaments considered).",
-    "^set_tz <timezone>":"Check out a list of valid timezones here: https://gist.github.com/heyalexej/8bf688fd67d7199be4a1682b3eec7568.",
-    "^get_tz": "Displays guild's current set timezone."
+    "help": "Command: ^help <command>: Displays help for specific command, or for all commands if command argument omitted.",
+    "sport": "Command: ^sport <league> [timezone]: Displays next 15 scheduled matches for specified sport league.",
+    "sport3day": "Command: ^sport3day <league> [timezone]: Displays up to 15 scheduled matches for specified sport league in the next 3 days.",
+    "csgo": "Command: ^csgo [timezone]: Displays up to 15 upcoming csgo matches (only A-Tier and S-tier tournaments considered).",
+    "csgo3day":"Command: ^csgo3day [timezone]: Display up to 15 upcoming csgo matches taking place in the next 3 days (only A-Tier and S-tier tournaments considered).",
+    "set_tz <timezone>":"Command: ^set_tz <timezone>: Check out a list of valid timezones https://gist.github.com/heyalexej/8bf688fd67d7199be4a1682b3eec7568.",
+    "get_tz": "Command: ^get_tz: Displays guild's current set timezone."
 }

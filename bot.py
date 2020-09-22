@@ -10,6 +10,8 @@ from discord.ext.commands import Context
 
 from discord.ext.commands.errors import CommandInvokeError
 from discord.ext.commands.errors import MissingRequiredArgument
+from discord.ext.commands.errors import UserInputError
+from discord.ext.commands.errors import CommandNotFound
 from pytz.exceptions import UnknownTimeZoneError
 
 from utils import guild_management
@@ -42,23 +44,25 @@ bot.remove_command('help')
 ## Test to see if bot can run
 @bot.event
 async def on_ready():
-    print(f"{bot.user} has connected to Discord")
-    print(f"The bot is currently in guilds: {bot.guilds}")
+    logging.info(f"{bot.user} has connected to Discord")
+    logging.info(f"The bot is currently in guilds: {bot.guilds}")
 
 ## Create database entry for guild when joining new guild
 @bot.event
 async def on_guild_join(guild):
-    guild_management.on_join(guild)
+    await guild_management.on_join(guild)
 
 ## Remove guild and associated data from DB when removed from guild
 @bot.event
 async def on_guild_remove(guild):
-    guild_management.on_remove(guild)
+    await guild_management.on_remove(guild)
 
-## Welcomes user to the guild
+## Handles uknown command exceptions
 @bot.event
-async def on_member_join(member: discord.Member):
-    await guild_management.welcome_user(member)
+async def on_command_error(ctx: Context, error):
+    if isinstance(error, CommandNotFound):
+        await argument_errors.not_command(ctx, error)
+
 
 ## Handler for csgo related queries
 @bot.command(name="csgo")
@@ -85,7 +89,19 @@ async def csgo3day_error(ctx: Context, error):
 async def sport(ctx, league, timezone=None):
     await sports.get_sport_schedule(ctx, league, timezone)
 @sport.error
-async def sports_error(ctx: Context, error):
+async def sport_error(ctx: Context, error):
+    if isinstance(error, MissingRequiredArgument):
+        await argument_errors.sport(ctx, error)
+    elif isinstance(error.__cause__, UnknownTimeZoneError):
+        await time_errors.invalid_tz(ctx, error)
+    else:
+        await argument_errors.default(ctx, error)
+
+@bot.command(name="sport3day")
+async def sport3day(ctx, league, timezone=None):
+    await sports.get_sport_schedule(ctx, league, timezone, three_day=True)
+@sport3day.error
+async def sport3day_error(ctx: Context, error):
     if isinstance(error, MissingRequiredArgument):
         await argument_errors.sport(ctx, error)
     elif isinstance(error.__cause__, UnknownTimeZoneError):
@@ -115,6 +131,12 @@ async def get_tz_error(ctx:Context, error):
 @bot.command(name="help")
 async def get_help(ctx: Context, command='help'):
     await help.help(ctx, command)
+@get_help.error
+async def get_help_error(ctx: Context, error):
+    if isinstance(error, UserInputError):
+        await argument_errors.not_command(ctx, error)
+    else:
+        await argument_errors.default(ctx, error)
 
 ## Start bot
 bot.run(DISCORD_TOKEN)

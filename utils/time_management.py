@@ -36,6 +36,6 @@ def create_utcdatetime(event_date, event_time):
 async def remind_at(event_time, event_name, channel: TextChannel):
     utc_now = to_tz(datetime.utcnow(), 'utc')
     offset = (event_time - utc_now).total_seconds()
-    print(offset)
+
     await asyncio.sleep(offset)
     await channel.send(f"{event_name} starting now!")

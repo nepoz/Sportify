@@ -10,7 +10,6 @@ from utils import mongo
 
 from discord.ext.commands import Context
 from discord import Message
-from pprint import pprint
 
 with open('utils/SDB_IDS.json', 'r') as f:
     SDB_IDS = json.load(f)
