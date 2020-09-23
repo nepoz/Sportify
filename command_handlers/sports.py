@@ -62,7 +62,8 @@ async def get_sport_schedule(ctx: Context, league, timezone, three_day=False):
     
     display = await extract_15(league, timezone, three_day)
     
-    output = f"Upcoming {league.upper()} Matches:\n" if not three_day else f"Upcoming {league.upper()} matches in next 3 days:"
+    output = f"Upcoming {league.upper()} Matches:\n" if not three_day else f"Upcoming {league.upper()} \
+        matches in next 3 days:"
     no_games = f"No {league.upper()} matches found for specified period."
 
     if not display:
@@ -86,4 +87,4 @@ async def get_sport_schedule(ctx: Context, league, timezone, three_day=False):
             await ctx.send('Did not register a selection')
         else:
             await ctx.send(f"Okay! Reminder set for {match}!")
-            await time_management.remind_at(time, match, ctx.channel)
+            await time_management.schedule(time, match, ctx.channel)

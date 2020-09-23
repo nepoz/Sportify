@@ -3,7 +3,19 @@ import pytz
 import asyncio
 from dateutil import parser
 
+from utils.mongo import MONGODB_URI
+from utils import mongo
+
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.jobstores import mongodb
+from apscheduler.triggers.date import DateTrigger
+
 from discord import TextChannel
+
+## Set up scheduler
+store = mongodb.MongoDBJobStore(client=mongo.client, collection='reminders')
+print(store)
+scheduler = AsyncIOScheduler(timezone='utc', jobstores={'mongodb':store})
 
 ## Will create a time interval from now to the specified number of 
 # days in the future
@@ -33,9 +45,11 @@ def create_utcdatetime(event_date, event_time):
     parsed = parser.parse(dt)
     return parsed.replace(tzinfo=pytz.utc)
 
-async def remind_at(event_time, event_name, channel: TextChannel):
-    utc_now = to_tz(datetime.utcnow(), 'utc')
-    offset = (event_time - utc_now).total_seconds()
+async def send_reminder(reminder: str, channel: TextChannel):
+    await channel.send(reminder)
 
-    await asyncio.sleep(offset)
-    await channel.send(f"{event_name} starting now!")
+async def schedule(event_time, event_name, channel: TextChannel):
+    return scheduler.add_job(
+        func=send_reminder, trigger=DateTrigger(event_time, 'utc'), args=(event_name, channel), 
+        id=str(channel)+event_name
+    )

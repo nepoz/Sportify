@@ -32,10 +32,6 @@ logging.basicConfig()
 ## load Discord token from .env file
 load_dotenv()
 DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
-PANDA_TOKEN = os.getenv('PANDA_TOKEN')
-
-## Auth headers for API Calls
-PANDA_AUTH = {"Authorization" : f"Bearer {PANDA_TOKEN}"}
 
 ## Create bot client, remove default help command
 bot = commands.Bot(command_prefix="^")
@@ -46,6 +42,7 @@ bot.remove_command('help')
 async def on_ready():
     logging.info(f"{bot.user} has connected to Discord")
     logging.info(f"The bot is currently in guilds: {bot.guilds}")
+    print(time_management.scheduler.get_jobs())
 
 ## Create database entry for guild when joining new guild
 @bot.event

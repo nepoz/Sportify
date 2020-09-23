@@ -77,4 +77,4 @@ async def get_csgo_schedule(ctx: Context, timezone, three_day=False):
             await ctx.send('Did not register a selection')
         else:
             await ctx.send(f"Okay! Reminder set for {match}!")
-            await time_management.remind_at(time, match, ctx.channel)
+            await time_management.schedule(time, match, ctx.channel)
