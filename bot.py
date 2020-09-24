@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 import typing
 import requests
 import logging
+import builtins
 
 import discord
 from discord.ext import commands
@@ -42,6 +43,7 @@ bot.remove_command('help')
 async def on_ready():
     logging.info(f"{bot.user} has connected to Discord")
     logging.info(f"The bot is currently in guilds: {bot.guilds}")
+    time_management.scheduler.start()
     print(time_management.scheduler.get_jobs())
 
 ## Create database entry for guild when joining new guild

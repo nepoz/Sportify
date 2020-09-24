@@ -11,6 +11,7 @@ from apscheduler.jobstores import mongodb
 from apscheduler.triggers.date import DateTrigger
 
 from discord import TextChannel
+from discord.ext.commands import Bot
 
 ## Set up scheduler
 store = mongodb.MongoDBJobStore(client=mongo.client, collection='reminders')
@@ -21,9 +22,9 @@ scheduler = AsyncIOScheduler(timezone='utc', jobstores={'mongodb':store})
 # days in the future
 def create_window(delta=20):
     today = datetime.now(timezone.utc)
-    tomorrow = today + timedelta(days=delta)
+    future = today + timedelta(days=delta)
 
-    return (today, tomorrow)
+    return (today, future)
 
 ## Converts given datetime to a specified timezone
 def to_tz(usr_datetime: datetime, user_tz='utc'):
@@ -45,11 +46,14 @@ def create_utcdatetime(event_date, event_time):
     parsed = parser.parse(dt)
     return parsed.replace(tzinfo=pytz.utc)
 
-async def send_reminder(reminder: str, channel: TextChannel):
-    await channel.send(reminder)
+async def send_reminder(reminder: str, channel_id: TextChannel.id):
+    return
 
-async def schedule(event_time, event_name, channel: TextChannel):
-    return scheduler.add_job(
-        func=send_reminder, trigger=DateTrigger(event_time, 'utc'), args=(event_name, channel), 
-        id=str(channel)+event_name
+async def schedule(event_time: datetime, event_name: str, channel_id: TextChannel.id):
+     
+    scheduler.add_job(
+        func=send_reminder, trigger=DateTrigger(event_time, 'utc'), args=[event_name, channel_id], 
+        id=str(channel_id)+event_name, jobstore='mongodb'
     )
+
+    print(scheduler.get_jobs())
