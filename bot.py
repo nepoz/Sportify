@@ -1,11 +1,12 @@
 import os 
-from dotenv import load_dotenv
 import typing
 import requests
 import logging
-import builtins
+from dotenv import load_dotenv
+from datetime import datetime
 
 import discord
+from discord import TextChannel
 from discord.ext import commands
 from discord.ext.commands import Context
 
@@ -17,6 +18,11 @@ from pytz.exceptions import UnknownTimeZoneError
 
 from utils import guild_management
 from utils import time_management
+from utils import mongo
+
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.jobstores import mongodb
+from apscheduler.triggers.date import DateTrigger
 
 import command_handlers
 from command_handlers import esports
@@ -38,13 +44,18 @@ DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
 bot = commands.Bot(command_prefix="^")
 bot.remove_command('help')
 
-## Test to see if bot can run
+## Set up scheduler for scheduling reminders
+store = mongodb.MongoDBJobStore(client=mongo.client, collection='reminders')
+main_scheduler = AsyncIOScheduler(timezone='utc', jobstores={'mongodb':store}, misfire_grace_time=5*60, coalesce=True)
+
+## Log bot starting
 @bot.event
 async def on_ready():
     logging.info(f"{bot.user} has connected to Discord")
     logging.info(f"The bot is currently in guilds: {bot.guilds}")
-    time_management.scheduler.start()
-    print(time_management.scheduler.get_jobs())
+    
+    ## Start the main scheduler when bot starts
+    main_scheduler.start()
 
 ## Create database entry for guild when joining new guild
 @bot.event
@@ -66,7 +77,9 @@ async def on_command_error(ctx: Context, error):
 ## Handler for csgo related queries
 @bot.command(name="csgo")
 async def csgo(ctx, timezone=None):
-    await esports.get_csgo_schedule(ctx, timezone)
+    time, event = await esports.get_csgo_schedule(ctx, timezone)
+    if time and event:
+        await schedule(time, event, ctx.channel.id)
 @csgo.error
 async def csgo_error(ctx: Context, error):
     if isinstance(error.__cause__, UnknownTimeZoneError):
@@ -76,7 +89,9 @@ async def csgo_error(ctx: Context, error):
 
 @bot.command(name="csgo3day")
 async def csgo3day(ctx, timezone=None):
-    await esports.get_csgo_schedule(ctx, timezone, three_day=True)
+    time, event = await esports.get_csgo_schedule(ctx, timezone, three_day=True)
+    if time and event:
+        await schedule(time, event, ctx.channel.id)
 @csgo3day.error
 async def csgo3day_error(ctx: Context, error):
     if isinstance(error.__cause__, UnknownTimeZoneError):
@@ -86,7 +101,9 @@ async def csgo3day_error(ctx: Context, error):
 
 @bot.command(name="sport")
 async def sport(ctx, league, timezone=None):
-    await sports.get_sport_schedule(ctx, league, timezone)
+    time, event = await sports.get_sport_schedule(ctx, league, timezone)
+    if time and event:
+        await schedule(time, event, ctx.channel.id)
 @sport.error
 async def sport_error(ctx: Context, error):
     if isinstance(error, MissingRequiredArgument):
@@ -98,7 +115,10 @@ async def sport_error(ctx: Context, error):
 
 @bot.command(name="sport3day")
 async def sport3day(ctx, league, timezone=None):
-    await sports.get_sport_schedule(ctx, league, timezone, three_day=True)
+    time, event = await sports.get_sport_schedule(ctx, league, timezone, three_day=True)
+    if time and event:
+        await schedule(time, event, ctx.channel.id)
+@sport.error
 @sport3day.error
 async def sport3day_error(ctx: Context, error):
     if isinstance(error, MissingRequiredArgument):
@@ -136,6 +156,19 @@ async def get_help_error(ctx: Context, error):
         await argument_errors.not_command(ctx, error)
     else:
         await argument_errors.default(ctx, error)
+
+async def send_reminder(reminder: str, channel_id: TextChannel.id):
+    channel: TextChannel = await bot.fetch_channel(channel_id)
+    await channel.send(reminder)
+
+async def schedule(event_time: datetime, event_name: str, channel_id: TextChannel.id):
+    main_scheduler.add_job(
+        func=send_reminder, trigger=DateTrigger(event_time, 'utc'), args=[event_name, channel_id], 
+        id=str(channel_id)+event_name, jobstore='mongodb'
+    )
+
+    channel = await bot.fetch_channel(channel_id)
+    await channel.send(f"Reminder for {event_name} set.")
 
 ## Start bot
 bot.run(DISCORD_TOKEN)
