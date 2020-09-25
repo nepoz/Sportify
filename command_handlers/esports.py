@@ -1,8 +1,9 @@
 import os
 import dotenv
 import requests
-from datetime import datetime
 import asyncio
+
+from datetime import datetime
 
 from utils import time_management
 from utils import mongo
@@ -16,9 +17,6 @@ PANDA_TOKEN = os.getenv('PANDA_TOKEN')
 PANDA_AUTH = {"Authorization" : f"Bearer {PANDA_TOKEN}"}
 
 ## List upcoming A or S tier CSGO games
-# TODO: Add customization for time period to check
-# TODO: Add functionality for added arguments eg. upcoming, tournaments etc.  
-# TODO: Add functionality to look a specified time ahead in the future
 async def get_csgo_schedule(ctx: Context, timezone, three_day=False):
     bot = ctx.bot
     await ctx.channel.trigger_typing()

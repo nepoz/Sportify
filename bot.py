@@ -2,8 +2,13 @@ import os
 import typing
 import requests
 import logging
+
 from dotenv import load_dotenv
 from datetime import datetime
+
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from apscheduler.jobstores import mongodb
+from apscheduler.triggers.date import DateTrigger
 
 import discord
 from discord import TextChannel
@@ -14,15 +19,12 @@ from discord.ext.commands.errors import CommandInvokeError
 from discord.ext.commands.errors import MissingRequiredArgument
 from discord.ext.commands.errors import UserInputError
 from discord.ext.commands.errors import CommandNotFound
+
 from pytz.exceptions import UnknownTimeZoneError
 
 from utils import guild_management
 from utils import time_management
 from utils import mongo
-
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from apscheduler.jobstores import mongodb
-from apscheduler.triggers.date import DateTrigger
 
 import command_handlers
 from command_handlers import esports
@@ -34,7 +36,7 @@ from error_handlers import time_errors
 from error_handlers import argument_errors
 
 ## Set up error logger
-logging.basicConfig()
+logging.basicConfig(level=logging.INFO)
 
 ## load Discord token from .env file
 load_dotenv()

@@ -1,6 +1,5 @@
 import requests
 from datetime import datetime
-from datetime import timedelta
 import pytz
 import json
 import asyncio
@@ -53,6 +52,7 @@ async def extract_15(league, timezone, three_day):
     
     return display
 
+## Provide information about upcoming sports events in a league
 async def get_sport_schedule(ctx: Context, league, timezone, three_day=False):
     bot = ctx.bot
     await ctx.channel.trigger_typing()
