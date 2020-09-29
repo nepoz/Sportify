@@ -59,12 +59,16 @@ async def get_csgo_schedule(ctx: Context, timezone, three_day=False):
 
     if not display:
         await ctx.send(no_games)
+        time, match = (None, None)
     else:
         await ctx.send(output)
         await ctx.send("If you want to set a reminder for an event, send the event number in next 45 seconds.")
 
         def range_check(m: Message):
-            return int(m.content) in range(len(display) + 1) and m.author == ctx.author
+            try:
+                return int(m.content) in range(len(display) + 1) and m.author == ctx.author
+            except ValueError:
+                return False
 
         try: 
             reminder_for = await bot.wait_for('message', check=range_check, timeout=45)
@@ -73,5 +77,6 @@ async def get_csgo_schedule(ctx: Context, timezone, three_day=False):
             match = display[index]['match']
         except asyncio.TimeoutError:
             await ctx.send('Did not register a selection')
-        else:
-            return (time, match)
+            time, match = (None, None)
+
+    return (time, match)
